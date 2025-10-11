@@ -28,13 +28,34 @@ You keep the free models (with rate limits) and unlock paid models (no rate limi
 
 ## How do daily grants work?
 
-Every day at 00:00 UTC, registered users get free Pollen. It's spent before your purchased balance.
+Registered users get free Pollen daily. It's spent before your purchased balance.
 
 We have three tiers: **Seed** (default), **Flower**, and **Nectar**. Higher tiers get more daily Pollen. You can request an upgrade in your dashboard.
 
 ## How much Pollen do models use?
 
-Each model uses different amounts of Pollen based on what it costs us to run. We'll have a Pollen cost page launching soon where you can see what each model uses. Free models always cost 0 Pollen.
+Each model uses different amounts of Pollen based on what it costs us to run. Free models always cost 0 Pollen.
+
+**Image models** (typical cost per image):
+- **flux**: Free forever
+- **turbo**: ~0.003 Pollen ($0.003)
+- **kontext**: ~0.005 Pollen ($0.005) 
+- **nanobanana**: ~0.02 Pollen ($0.02) - *popular for quality*
+- **gptimage**: ~0.013 Pollen ($0.013)
+
+**Text models** range from free to ~0.01 Pollen per 1000 tokens, with premium models costing more.
+
+## What can I do with 10 Pollen?
+
+With 10 Pollen ($10), you can generate approximately:
+- **3,875 turbo images** (great for quick iterations)
+- **1,940 kontext images** (high-quality results)  
+- **775 gptimage images** (OpenAI's image model)
+- **500 nanobanana images** (premium quality, very popular)
+- **100,000+ text responses** with basic models
+- **1,000 text responses** with premium models like GPT-5
+
+*These are estimates - actual usage may vary based on image complexity and text length.*
 
 ## Will free models always be free?
 
