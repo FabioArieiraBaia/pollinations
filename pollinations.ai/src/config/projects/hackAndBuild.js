@@ -285,5 +285,13 @@ export const hackAndBuildProjects = [
     repo: "https://github.com/raymerjacque/Makulu-Agent-Portal",
     submissionDate: "2025-08-31",
     order: 1
+  },
+  {
+    name: "AI Answers Forms",
+    url: "https://chromewebstore.google.com/detail/fbiccefbjbnnieofnomocjdebppanndo?utm_source=item-share-cb",
+    description: "Chrome Extension which helps get answers to questions on a Google Form using AI. Features 9K+ active users and enhances form completion efficiency through intelligent answer suggestions.",
+    author: "@Maniii97",
+    submissionDate: "2025-10-15",
+    order: 1
   }
 ];
