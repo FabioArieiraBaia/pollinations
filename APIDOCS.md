@@ -741,9 +741,23 @@ https://image.pollinations.ai/prompt/landscape?referrer=myapp.com
 - The `referrer` tells the API which app is making the request.
 - Great for simple web apps without backend code.
 
-#### Bearer Token (Backend)
-For server-side apps, use a token for secure access.  
-**Example**:
+#### Token Authentication (Server-to-Server)
+For server-side apps, backend services, and automated systems, use token authentication for secure access and higher rate limits.
+
+**How to Get a Token**:
+1. Visit [auth.pollinations.ai](https://auth.pollinations.ai)
+2. Sign in with GitHub
+3. Generate an API token from your dashboard
+4. Keep your token secret—never expose it in client-side code!
+
+**Supported Token Formats**:
+Tokens can be sent using any of these methods:
+- `Authorization: Bearer YOUR_TOKEN` (recommended)
+- `Authorization: Token YOUR_TOKEN`
+- `Authorization: YOUR_TOKEN`
+- Query parameter: `?token=YOUR_TOKEN` (less secure, use only when headers aren't available)
+
+**Example (Text API)**:
 ```bash
 curl https://text.pollinations.ai/openai \
   -H "Content-Type: application/json" \
@@ -751,9 +765,17 @@ curl https://text.pollinations.ai/openai \
   -d '{"model": "openai", "messages": [{"role": "user", "content": "Hello"}]}'
 ```
 
-**What’s Happening?**
-- Replace `YOUR_TOKEN` with a token from [auth.pollinations.ai](https://auth.pollinations.ai).
-- This is safer for backend apps.
+**Example (Image API)**:
+```bash
+curl -o image.jpg "https://image.pollinations.ai/prompt/sunset" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**What's Happening?**
+- Replace `YOUR_TOKEN` with your token from [auth.pollinations.ai](https://auth.pollinations.ai)
+- Tokens are validated against the auth service and cached for 30 seconds
+- Your tier (Seed, Flower, or Nectar) determines rate limits and model access
+- **Important**: Tokens are for server-to-server use only—never expose them in frontend JavaScript!
 
 ### Access Tiers
 | Tier     | Rate Limit             | Models Available | Access             | Notes                     |
