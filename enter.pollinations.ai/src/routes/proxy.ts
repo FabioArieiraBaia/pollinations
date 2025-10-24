@@ -189,6 +189,8 @@ export const proxyRoutes = new Hono<Env>()
                 targetUrl.pathname,
                 c.req.param("prompt"),
             );
+            // Remove the token parameter from URL before proxying to origin
+            targetUrl.searchParams.delete("token");
             const response = await proxy(targetUrl, {
                 ...c.req,
                 headers: {

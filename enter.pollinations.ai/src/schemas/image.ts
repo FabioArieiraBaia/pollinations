@@ -37,6 +37,7 @@ export const GenerateImageRequestQueryParamsSchema = z.object({
         .default([]),
     transparent: z.coerce.boolean().optional().default(false),
     guidance_scale: z.coerce.number().optional(),
+    token: z.string().optional(), // API key for authentication via URL parameter
 });
 
 export type GenerateImageRequestQueryParams = z.infer<

@@ -21,9 +21,32 @@ export type AuthEnv = {
 export const authenticate = createMiddleware<AuthEnv>(async (c, next) => {
     const client = createAuth(c.env);
 
-    const result = await client.api.getSession({
-        headers: c.req.raw.headers,
-    });
+    // Check for token in URL query parameter
+    const urlToken = c.req.query("token");
+
+    let result;
+    if (urlToken) {
+        // If token is provided in URL, authenticate using API key
+        try {
+            // Create a temporary request with the token in the Authorization header
+            const tempHeaders = new Headers(c.req.raw.headers);
+            tempHeaders.set("Authorization", `Bearer ${urlToken}`);
+
+            result = await client.api.getSession({
+                headers: tempHeaders,
+            });
+        } catch (error) {
+            // If URL token validation fails, fall back to standard authentication
+            result = await client.api.getSession({
+                headers: c.req.raw.headers,
+            });
+        }
+    } else {
+        // Standard session-based authentication
+        result = await client.api.getSession({
+            headers: c.req.raw.headers,
+        });
+    }
 
     const session = result?.session;
     const user = result?.user;
