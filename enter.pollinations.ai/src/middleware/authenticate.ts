@@ -21,8 +21,20 @@ export type AuthEnv = {
 export const authenticate = createMiddleware<AuthEnv>(async (c, next) => {
     const client = createAuth(c.env);
 
+    // Check for token in query parameter
+    const tokenFromQuery = c.req.query("token");
+
+    // Prepare headers, potentially adding Authorization header from query token
+    let headers = c.req.raw.headers;
+    if (tokenFromQuery) {
+        // Create a new Headers object with the Authorization header added
+        const modifiedHeaders = new Headers(headers);
+        modifiedHeaders.set("Authorization", `Bearer ${tokenFromQuery}`);
+        headers = modifiedHeaders;
+    }
+
     const result = await client.api.getSession({
-        headers: c.req.raw.headers,
+        headers,
     });
 
     const session = result?.session;
