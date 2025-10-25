@@ -1,6 +1,6 @@
 #!/bin/bash
 # Test API key authentication at commit a9bb18d5d (before PR #4761)
-# Run with dev server on localhost:3003
+# Run with dev server on localhost:3000
 # Usage: ./test-api-key-before-pr.sh <API_KEY>
 
 if [ -z "$1" ]; then
@@ -9,7 +9,7 @@ if [ -z "$1" ]; then
 fi
 
 API_KEY="$1"
-BASE_URL="http://localhost:3003/api/generate/openai"
+BASE_URL="http://localhost:3000/api/generate/openai"
 RANDOM_ID=$RANDOM
 
 echo "Testing API key authentication BEFORE PR #4761"
