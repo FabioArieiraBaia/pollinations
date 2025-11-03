@@ -7,7 +7,7 @@
     "scripts": {
         "typecheck": "tsc --noEmit",
         "dev": "sops -d .encrypted.dev.env > .dev.vars && vite dev",
-        "dev:gen": "wrangler dev --config wrangler.gen.toml",
+        "dev:gen": "wrangler dev --env gen-staging",
         "test": "npx vitest run",
         "gen:migrations": "npx drizzle-kit generate",
         "gen:auth-schema": "npx @better-auth/cli@latest generate --config betterAuth.config.ts --output src/db/schema/better-auth.ts",
@@ -16,10 +16,8 @@
         "migrate:development": "wrangler d1 migrations apply DB --local",
         "build:staging": "CLOUDFLARE_ENV=staging vite build --mode=staging",
         "build:production": "CLOUDFLARE_ENV=production vite build",
-        "deploy:staging": "npm run build:staging && wrangler deploy",
-        "deploy:production": "npm run build:production && wrangler deploy",
-        "deploy:gen:staging": "wrangler deploy --config wrangler.gen.toml --env staging",
-        "deploy:gen:production": "wrangler deploy --config wrangler.gen.toml --env production",
+        "deploy:staging": "npm run build:staging && wrangler deploy --env staging",
+        "deploy:gen-staging": "wrangler deploy --env gen-staging",
         "push-secrets:staging": "sops exec-file --no-fifo .encrypted.staging.env 'npx wrangler secret bulk {} --env staging'",
         "push-secrets:production": "sops exec-file --no-fifo .encrypted.production.env 'npx wrangler secret bulk {} --env production'"
     },

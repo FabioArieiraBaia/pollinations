@@ -15,8 +15,9 @@ export default defineWorkersConfig(async () => {
                 workers: {
                     singleWorker: true,
                     wrangler: {
-                        // Use gen service config
-                        configPath: "../wrangler.gen.toml",
+                        // Use consolidated wrangler config with gen-staging environment
+                        configPath: "../wrangler.toml",
+                        environment: "gen-staging",
                     },
                     miniflare: {
                         bindings: {

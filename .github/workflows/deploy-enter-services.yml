@@ -163,6 +163,6 @@ jobs:
           
           # Deploy gen to staging (dependencies already installed above)
           echo "🚀 Deploying gen to staging environment..."
-          npm run deploy:gen:staging
+          npm run deploy:gen-staging
           
           echo "✅ gen.pollinations.ai deployed to Cloudflare Workers!"
