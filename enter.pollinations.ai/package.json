@@ -7,7 +7,7 @@
     "scripts": {
         "typecheck": "tsc --noEmit",
         "dev": "sops -d .encrypted.dev.env > .dev.vars && vite dev",
-        "dev:gen": "wrangler dev --env gen-staging",
+        "dev:gen": "wrangler dev --env gen-staging --port 3001",
         "test": "npx vitest run",
         "gen:migrations": "npx drizzle-kit generate",
         "gen:auth-schema": "npx @better-auth/cli@latest generate --config betterAuth.config.ts --output src/db/schema/better-auth.ts",
