@@ -5,6 +5,11 @@ on:
     branches:
       - staging
       - feature/encrypt-gptimage-env
+    paths:
+      - 'text.pollinations.ai/**'
+      - 'image.pollinations.ai/**'
+      - 'enter.pollinations.ai/**'
+      - '.github/workflows/deploy-enter-services.yml'
   workflow_dispatch:
 
 jobs:
@@ -145,3 +150,19 @@ jobs:
           npm run deploy:staging
           
           echo "✅ enter.pollinations.ai deployed to Cloudflare Workers!"
+
+      - name: Deploy gen.pollinations.ai to Cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -e
+          
+          echo "☁️ Deploying gen.pollinations.ai to Cloudflare Workers..."
+          
+          cd enter.pollinations.ai
+          
+          # Deploy gen to staging (dependencies already installed above)
+          echo "🚀 Deploying gen to staging environment..."
+          npm run deploy:gen:staging
+          
+          echo "✅ gen.pollinations.ai deployed to Cloudflare Workers!"
