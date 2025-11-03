@@ -154,6 +154,7 @@ jobs:
       - name: Deploy gen.pollinations.ai to Cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ENV: gen-staging
         run: |
           set -e
           

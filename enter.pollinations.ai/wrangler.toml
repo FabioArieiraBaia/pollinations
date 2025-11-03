@@ -9,11 +9,6 @@ port = 3000
 [triggers]
 crons = [ "* * * * *" ] # every minute
 
-[assets]
-directory = "dist/client"
-not_found_handling = "single-page-application"
-run_worker_first = [ "/api/*" ]
-
 [[d1_databases]]
 binding = "DB"
 database_name = "development-pollinations-enter-db"
@@ -45,6 +40,11 @@ TEXT_SERVICE_URL = "http://ec2-3-80-56-235.compute-1.amazonaws.com:16385"
 pattern = "enter.pollinations.ai"
 zone_name = "pollinations.ai"
 custom_domain = true
+
+[env.staging.assets]
+directory = "dist/client"
+not_found_handling = "single-page-application"
+run_worker_first = [ "/api/*" ]
 
 [[env.staging.d1_databases]]
 binding = "DB"
