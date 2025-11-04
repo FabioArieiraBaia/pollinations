@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { ENTER_BASE_URL, API_KEY } from "./enterApi";
 
 /**
  * Hook for text editor functionality
@@ -15,9 +16,6 @@ export const useTextEditor = ({ stop, entry }) => {
         // Always update currentEntry when the parent entry changes
         setCurrentEntry(entry);
     }, [entry]);
-
-    const API_KEY = "plln_pk_RRHEqHFAF7utI50fgWc418G7vLXybWg7wkkGQtBgNnZPGs3y4JKpqgEneL0YwQP2";
-    const ENTER_BASE_URL = "https://enter.pollinations.ai/api";
 
     // Generate text via API (using POST with OpenAI format)
     const updateText = useCallback(
