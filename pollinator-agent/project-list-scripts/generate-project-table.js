@@ -49,8 +49,8 @@ const formatProjectName = (project) => {
         name = `[${name}](${project.url})`;
     }
 
-    // Always add GitHub link as clickable stars if repo exists
-    if (project.repo) {
+    // Always add GitHub link as clickable stars if repo exists and is a valid URL
+    if (project.repo && project.repo !== "No response" && project.repo.startsWith("http")) {
         const starCount =
             project.stars >= 1000
                 ? `${(project.stars / 1000).toFixed(1)}k`
