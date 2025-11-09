@@ -26,7 +26,6 @@ import {
 } from "./utils/stringMonitor.js";
 
 // Import shared utilities
-import { getIp } from "../shared/extractFromRequest.js";
 import {
     buildUsageHeaders,
     openaiUsageToTokenUsage,
@@ -41,64 +40,11 @@ dotenv.config();
 
 const BANNED_PHRASES = [];
 
-// const blockedIPs = new Set();
-const blockedIPs = new Set();
-
-async function blockIP(ip) {
-    // Only proceed if IP isn't already blocked
-    if (!blockedIPs.has(ip)) {
-        blockedIPs.add(ip);
-        log("IP blocked:", ip);
-
-        try {
-            // Append IP to log file with newline
-            await fs.appendFile(BLOCKED_IPS_LOG, `${ip}\n`, "utf8");
-        } catch (error) {
-            errorLog("Failed to write blocked IP to log file:", error);
-        }
-    }
-}
-
-function isIPBlocked(ip) {
-    return blockedIPs.has(ip);
-}
-
 const app = express();
 
 const log = debug("pollinations:server");
 const errorLog = debug("pollinations:error");
 const authLog = debug("pollinations:auth");
-const BLOCKED_IPS_LOG = path.join(process.cwd(), "blocked_ips.txt");
-
-// Load blocked IPs from file on startup
-async function loadBlockedIPs() {
-    try {
-        const data = await fs.readFile(BLOCKED_IPS_LOG, "utf8");
-        const ips = data.split("\n").filter((ip) => ip.trim());
-        for (const ip of ips) {
-            blockedIPs.add(ip.trim());
-        }
-        log(`Loaded ${blockedIPs.size} blocked IPs from file`);
-    } catch (error) {
-        if (error.code !== "ENOENT") {
-            errorLog("Error loading blocked IPs:", error);
-        }
-    }
-}
-
-// Load blocked IPs before starting server
-loadBlockedIPs().catch((error) => {
-    errorLog("Failed to load blocked IPs:", error);
-});
-
-// Middleware to block IPs
-app.use((req, res, next) => {
-    const ip = getIp(req);
-    if (isIPBlocked(ip)) {
-        return res.status(403).end();
-    }
-    next();
-});
 
 // Remove the custom JSON parsing middleware and use the standard bodyParser
 app.use(bodyParser.json({ limit: "20mb" }));
@@ -629,23 +575,6 @@ export function sendContentResponse(res, completion) {
 
 // Helper function to process requests with queueing and caching logic
 async function processRequest(req, res, requestData) {
-    const ip = getIp(req);
-
-    // Check for blocked IPs first
-    if (isIPBlocked(ip)) {
-        errorLog("Blocked IP:", ip);
-        const errorResponse = {
-            error: "Forbidden",
-            status: 403,
-            details: {
-                blockedIp: ip,
-                timestamp: new Date().toISOString(),
-            },
-        };
-
-        return res.status(403).json(errorResponse);
-    }
-
     // Authentication and queue removed - all requests processed immediately
     // All authentication now handled by enter.pollinations.ai
     await handleRequest(req, res, requestData);
