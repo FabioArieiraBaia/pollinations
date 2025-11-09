@@ -309,10 +309,20 @@ const checkCacheAndGenerate = async (
     let timingInfo = [];
 
     try {
-        // Call authentication ONCE and reuse the result
-        const authResult = await handleAuthentication(req, requestId, logAuth);
-        const isAuthenticated = authResult.authenticated;
-        const hasValidToken = authResult.tokenAuth;
+        // No authentication - all requests assumed to come from enter.pollinations.ai
+        // enter.pollinations.ai handles authentication and passes x-enter-token
+        const authResult = {
+            authenticated: false,
+            tokenAuth: false,
+            referrerAuth: false,
+            bypass: false,
+            reason: "ENTER_PROXY",
+            userId: null,
+            username: null,
+            debugInfo: { authResult: "ENTER_PROXY" }
+        };
+        const isAuthenticated = false;
+        const hasValidToken = false;
 
         // Cache the generated image
         const bufferAndMaturity = await cacheImagePromise(
