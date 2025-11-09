@@ -106,14 +106,7 @@ export async function enqueue(req, fn, { interval = 6000, cap = 1, forceCap = fa
 
     authLog("Processing %s %s from IP: %s", method, path, ip);
 
-    // Check if request is from enter.pollinations.ai - BYPASS IP QUEUEING ENTIRELY
-    // Enter requests go directly to the handler without IP-based queue delays
-    if (isEnterRequest(req)) {
-        authLog("🌸 Enter request - BYPASSING IP QUEUE (direct execution)");
-        return fn();
-    }
-
-    // Get authentication status
+    // Get authentication status (for logging/tracking, not for rate limiting)
     const authResult = await shouldBypassQueue(req);
     authLog("Auth: %s, userId=%s", authResult.reason, authResult.userId || "none");
 
@@ -129,89 +122,10 @@ export async function enqueue(req, fn, { interval = 6000, cap = 1, forceCap = fa
         });
     }
 
-    // For all other users, always use the queue but adjust the interval and cap based on authentication type
-    // This ensures all requests are subject to rate limiting and queue size constraints
-
-    // Only apply user-based cap if forceCap is not set
-	if (!forceCap) {
-		cap = getCapForUser(authResult);
-	} else {
-		log('Using forced cap: %d (override)', cap);
-	}
-
-    const maxQueueSize = cap * 5;
-
-	// Check if queue exists for this IP and get its current size
-	const currentQueueSize = queues.get(ip)?.size || 0;
-	const currentPending = queues.get(ip)?.pending || 0;
-	const totalInQueue = currentQueueSize + currentPending;
-
-	// Capture queue information for logging
-	const queueInfo = {
-		ip: ip,
-		queueSize: currentQueueSize,
-		pending: currentPending,
-		total: totalInQueue,
-		position: totalInQueue + 1, // This request's position in queue
-		enqueuedAt: new Date().toISOString(),
-		authenticated: authResult.authenticated || false,
-	};
-
-	// Store queue info in request object for later access
-	if (req && typeof req === "object") {
-		req.queueInfo = queueInfo;
-	}
-
-	log("Queue info captured: %O", queueInfo);
-
-	// Check if adding to queue would exceed maxQueueSize
-	if (maxQueueSize && totalInQueue >= maxQueueSize) {
-		const userContext = authResult.username ? `user: ${authResult.username} (${authResult.userId})` : `IP: ${ip}`;
-		const message = `Queue full for ${userContext}: ${totalInQueue} requests already queued (max: ${maxQueueSize})`;
-		
-		errorLog("🚫 RATE LIMIT: %s", message);
-		
-		const error = createError(message, 429, {
-			queueInfo: {
-				ip, currentSize: currentQueueSize, pending: currentPending,
-				total: totalInQueue, maxAllowed: maxQueueSize,
-				username: authResult.username || null,
-				userId: authResult.userId || null,
-			}
-		});
-		
-		// Log detailed rate limit error for debugging (if logger available)
-		if (logRateLimitError) {
-			try {
-				logRateLimitError(error, authResult, req, { interval, cap, forceCap });
-			} catch (logError) {
-				errorLog("Failed to log rate limit error:", logError.message);
-			}
-		}
-		
-		throw error;
-	}
-
-	// Queue the function based on IP
-	log("Queuing for IP: %s (size: %d, pending: %d)", ip, currentQueueSize, currentPending);
-
-	// Create queue for this IP if it doesn't exist
-	if (!queues.has(ip)) {
-		const queueOptions = { concurrency: cap };
-		if (interval > 0) {
-			queueOptions.interval = interval;
-			queueOptions.intervalCap = cap;
-		}
-		log("Creating queue for IP: %s (interval: %dms, cap: %d)", ip, interval, cap);
-		queues.set(ip, new PQueue(queueOptions));
-	}
-
-	// Add to queue and return
-	log("Adding to queue for IP: %s (position #%d)", ip, totalInQueue + 1);
-	return queues.get(ip).add(() => {
-		log("Executing for IP: %s", ip);
-		return fn();
-	});
+    // RATE LIMITING DEACTIVATED - ALL REQUESTS EXECUTE IMMEDIATELY
+    // No queue delays, no concurrency limits, no 429 errors
+    authLog("⚡ Rate limiting deactivated - executing immediately");
+    return fn();
 }
 
 /**
