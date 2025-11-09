@@ -12,7 +12,7 @@ import { shouldProceedWithAd, sendAdSkippedAnalytics } from "./adUtils.js";
 //     extractTrackingData,
 //     trackImpression,
 // } from "./nexAdFormatter.js";
-import { handleAuthentication } from "../../shared/auth-utils.js";
+// handleAuthentication removed - no longer needed (no auth validation)
 import { incrementUserMetric } from "../../shared/userMetrics.js";
 
 const log = debug("pollinations:adfilter");
@@ -41,22 +41,9 @@ export async function generateAdForContent(
     }
 
     try {
-        // Get authenticated user ID if available - do this once at the top
-        let authResult = null;
+        // Authentication removed - no longer needed
+        // Ads are globally disabled anyway (ADS_GLOBALLY_DISABLED = true)
         let authenticatedUserId = null;
-
-        try {
-            authResult = await handleAuthentication(req);
-            if (authResult.authenticated && authResult.userId) {
-                authenticatedUserId = authResult.userId;
-                log(`Authenticated user ID: ${authenticatedUserId}`);
-            }
-        } catch (error) {
-            // Authentication failed, continue without user ID
-            log(
-                "Authentication failed or not provided, continuing without user ID",
-            );
-        }
 
         // Check if we should show ads - pass auth result to avoid duplicate authentication
         const { shouldShowAd, markerFound, forceAd } = await shouldShowAds(

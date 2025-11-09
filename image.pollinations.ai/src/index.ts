@@ -3,11 +3,8 @@ import http from "node:http";
 import { parse } from "node:url";
 import debug from "debug";
 import urldecode from "urldecode";
-import {
-    addAuthDebugHeaders,
-    createAuthDebugResponse,
-    handleAuthentication,
-} from "../../shared/auth-utils.js";
+// Authentication imports removed - no longer used
+// All authentication now handled by enter.pollinations.ai
 import { extractToken, getIp } from "../../shared/extractFromRequest.js";
 import { sendImageTelemetry } from "./utils/telemetry.js";
 import { buildTrackingHeaders } from "./utils/trackingHeaders.js";
@@ -413,8 +410,7 @@ const checkCacheAndGenerate = async (
             headers["Content-Disposition"] = `inline; filename="${filename}"`;
         }
 
-        // Add authentication debug headers using shared utility
-        addAuthDebugHeaders(headers, authResult.debugInfo);
+        // Authentication debug headers removed - no longer needed
 
         // Debug: Log trackingData before building headers
         logApi("=== TRACKING DATA BEFORE HEADERS ===");
@@ -465,7 +461,7 @@ const checkCacheAndGenerate = async (
             "X-Error-Type": errorType,
         };
 
-        addAuthDebugHeaders(errorHeaders, errorDebugInfo);
+        // Authentication debug headers removed - no longer needed
 
         // Log the error response using debug
         logError("Error response:", {
@@ -481,7 +477,7 @@ const checkCacheAndGenerate = async (
             error: errorType,
             message: error.message,
             details: error.details,
-            debug: createAuthDebugResponse(errorDebugInfo),
+            // debug: auth debugging removed
             timingInfo: relativeTiming(timingInfo),
             requestId,
             requestParameters: {

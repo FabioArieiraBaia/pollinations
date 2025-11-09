@@ -1,36 +1,17 @@
 /**
  * Shared authentication utilities for Pollinations services
- * This module consolidates referrer and token handling logic
- *
- * Strategy:
- * - Frontend apps (no backend): Use referrer + IP-based queuing
- * - Backend apps: Use token authentication with no queuing
- * - Referrers grant extended access but fewer rights than tokens
- *
- * Usage:
- * Services can import these utilities directly, as environment variables are loaded automatically:
- * import { extractToken, extractReferrer, shouldBypassQueue, handleAuthentication, addAuthDebugHeaders, createAuthDebugResponse } from '../shared/auth-utils.js';
+ * 
+ * Note: Authentication validation has been removed.
+ * All authentication is now handled by enter.pollinations.ai
+ * 
+ * This module only contains utility functions for:
+ * - Token validation (simple string comparison)
+ * - Domain whitelisting
+ * - Enter.pollinations.ai request detection
  */
 
 // Auto-load environment variables from shared and local .env files
 import "./env-loader.js";
-import debug from "debug";
-import memoizee from "memoizee";
-import {
-	extractReferrer,
-	getTokenSource,
-	extractToken,
-} from "./extractFromRequest.js";
-
-// Set up debug loggers with namespaces
-const log = debug("pollinations:auth");
-const errorLog = debug("pollinations:error");
-const tokenLog = debug("pollinations:auth:token");
-const referrerLog = debug("pollinations:auth:referrer");
-
-// Extract authentication token from request
-// This function has been moved to extractFromRequest.js
-// and is now imported at the top of this file
 
 /**
  * Validate token against allowed tokens
@@ -50,9 +31,6 @@ export function isValidToken(token, validTokens) {
 	// Check if token is in the array
 	return tokensArray.includes(token);
 }
-
-// Legacy auth.pollinations.ai validation functions removed
-// Authentication is now handled by enter.pollinations.ai
 
 /**
  * Check if domain is whitelisted
@@ -108,102 +86,6 @@ export async function isUserDomainAllowedFromDb(
 }
 
 /**
- * Determine if request is authenticated
- * @param {Request|Object} req - The request object
- * @param {Object} ctx - Context object (currently unused but kept for future extensibility)
- * @returns {{authenticated: boolean, tokenAuth: boolean, referrerAuth: boolean, bypass: boolean, reason: string, userId: string|null, username: string|null, debugInfo: Object}} Authentication status, auth type, reason, userId, username if authenticated, and debug info
- * @throws {Error} If an invalid token is provided
- */
-export async function shouldBypassQueue(req) {
-	log("shouldBypassQueue called for request: %s %s", req.method, req.url);
-
-	const token = extractToken(req);
-	const ref = extractReferrer(req);
-
-	if (token) {
-		tokenLog(
-			"Token extracted: %s (length: %d, source: %s)",
-			token.length > 8
-				? token.substring(0, 4) + "..." + token.substring(token.length - 4)
-				: token,
-			token.length,
-			getTokenSource(req),
-		);
-	} else {
-		tokenLog("No token provided in request");
-	}
-
-	if (ref) {
-		referrerLog("Referrer extracted: %s", ref);
-	} else {
-		referrerLog("No referrer found in request");
-	}
-
-	const debugInfo = {
-		token: token
-			? token.length > 8
-				? token.substring(0, 4) + "..." + token.substring(token.length - 4)
-				: token
-			: null,
-		referrer: ref,
-		tokenSource: token ? getTokenSource(req) : null,
-	};
-
-	// 1️⃣ Token-based authentication (legacy - no longer validated)
-	if (token) {
-		tokenLog("Token found but validation disabled: %s", debugInfo.token);
-		// Token validation against auth.pollinations.ai removed
-		// All requests now assumed to come from enter.pollinations.ai
-		if (false) { // Dead code block - keeping structure for reference
-			tokenLog(
-				"✅ Valid DB token found for user: (validation disabled)",
-			);
-			debugInfo.authResult = "DB_TOKEN";
-			debugInfo.userId = null;
-			debugInfo.username = null;
-			log(
-				"Authentication succeeded: DB_TOKEN for user (validation disabled)",
-			);
-			return {
-				authenticated: true,
-				tokenAuth: true,
-				referrerAuth: false,
-				reason: "DB_TOKEN",
-				...tokenResult,
-				debugInfo,
-			};
-		}
-		// If token is provided but it's not valid, we log it and continue.
-		// tokenLog('❌ Invalid or unrecognized token provided: %s. Will try other auth methods.', debugInfo.token);
-		// errorLog('Invalid or unrecognized token provided (source: %s, token: %s)', debugInfo.tokenSource || 'unknown', debugInfo.token);
-		// throw new Error('Invalid or unrecognized token provided');
-	}
-
-	// 2️⃣ Referrer-based authentication (legacy - no longer validated)
-	if (ref) {
-		const refStr = String(ref);
-		referrerLog("Referrer found but validation disabled: %s", refStr);
-		// Referrer validation against auth.pollinations.ai removed
-		// All requests now assumed to come from enter.pollinations.ai
-	}
-
-	// Default return if no authentication method succeeds
-	log(
-		"Authentication failed: NO_AUTH_METHOD_SUCCESS (No valid token or registered referrer found)",
-	);
-	debugInfo.authResult = "NONE";
-	return {
-		authenticated: false,
-		tokenAuth: false,
-		referrerAuth: false,
-		reason: "NO_AUTH_METHOD_SUCCESS",
-		userId: null,
-		username: null,
-		debugInfo,
-	};
-}
-
-/**
  * Check if request is from enter.pollinations.ai
  * @param {Object} req - Request object
  * @returns {boolean} True if request has valid enter token
@@ -219,183 +101,11 @@ export function isEnterRequest(req) {
 	return enterToken === validEnterToken;
 }
 
-/**
- * Handle authentication with standardized error handling
- * This function encapsulates the common pattern of:
- * 1. Loading auth context from environment
- * 2. Calling shouldBypassQueue with error handling
- * 3. Returning structured auth result or throwing appropriate errors
- *
- * @param {Object} req - Request object
- * @param {string} requestId - Request ID for logging
- * @param {Function} logAuth - Debug logger function
- * @returns {Promise<Object>} Authentication result with authenticated status, reason, userId, and debugInfo
- * @throws {Error} 401 error for invalid tokens, re-throws other errors
- */
-export async function handleAuthentication(
-	req,
-	requestId = null,
-	logAuth = null,
-) {
-	let isAuthenticated, reason, userId, debugInfo;
-
-	try {
-		// Check if request is authenticated using shared utility
-		// This may throw an error if an invalid token is provided
-		// const allowlist = process.env.ALLOWLISTED_DOMAINS ? process.env.ALLOWLISTED_DOMAINS.split(',') : []; // Removed allowlist
-		const authResult = await shouldBypassQueue(req);
-		isAuthenticated = authResult.authenticated;
-		reason = authResult.reason;
-		userId = authResult.userId;
-		debugInfo = authResult.debugInfo;
-
-		// Log authentication information if logger provided
-		if (logAuth && requestId) {
-			logAuth("Authentication result:", {
-				requestId,
-				isAuthenticated,
-				reason,
-				userId,
-				debugInfo,
-			});
-		}
-
-		return {
-			...authResult,
-			debugInfo,
-		};
-	} catch (authError) {
-		// Handle invalid token error
-		if (authError.details?.debugInfo?.authResult === "INVALID_TOKEN") {
-			if (logAuth) {
-				logAuth("Invalid token error:", authError.message);
-				// Log the authentication error using debug
-				if (requestId) {
-					logAuth("Authentication error:", {
-						requestId,
-						error: "INVALID_TOKEN",
-						message: authError.message,
-					});
-				}
-			}
-
-			// Return a 401 Unauthorized response
-			const error = new Error("Invalid authentication token");
-			error.status = 401;
-			error.details = { authError: "The provided token is not valid" };
-			throw error;
-		}
-		// Re-throw other errors
-		throw authError;
-	}
-}
-
-/**
- * Add debug headers to response from authentication debug info
- * This centralizes the common pattern of adding X-Debug-* headers for authentication debugging
- *
- * @param {Object} headers - Headers object to modify
- * @param {Object} debugInfo - Debug info from authentication result
- */
-export function addAuthDebugHeaders(headers, debugInfo) {
-	if (!debugInfo) return;
-
-	if (debugInfo.authResult) {
-		headers["X-Auth-Result"] = debugInfo.authResult;
-	}
-
-	if (debugInfo.token) {
-		headers["X-Debug-Token"] = debugInfo.token;
-	}
-
-	if (debugInfo.tokenSource) {
-		headers["X-Debug-Token-Source"] = debugInfo.tokenSource;
-	}
-
-	if (debugInfo.referrer) {
-		headers["X-Debug-Referrer"] = "present";
-	}
-}
-
-/**
- * Create a structured debug response object from authentication debug info
- * This centralizes the common pattern of constructing debug info for error responses
- *
- * @param {Object} debugInfo - Debug info from authentication result
- * @returns {Object|null} Structured debug object or null if no debug info
- */
-export function createAuthDebugResponse(debugInfo) {
-	if (!debugInfo) return null;
-
-	const debug = {
-		authResult: debugInfo.authResult || "NONE",
-	};
-
-	// Add token info if available
-	if (debugInfo.token || debugInfo.tokenSource) {
-		debug.tokenInfo = {
-			present: !!debugInfo.token,
-			source: debugInfo.tokenSource || "none",
-		};
-	}
-
-	// Add referrer info if available
-	if (debugInfo.referrer || debugInfo.allowlistMatch) {
-		debug.referrerInfo = {
-			present: !!debugInfo.referrer,
-			allowlistMatch: !!debugInfo.allowlistMatch,
-		};
-	}
-
-	return debug;
-}
-
-/**
- * Fetch user preferences from auth.pollinations.ai
- * @param {string} userId - The user ID to fetch preferences for
- * @returns {Promise<Object|null>} User preferences object or null if not found/error
- */
-export async function getUserPreferences(userId) {
-	if (!userId) return null;
-
-	const preferenceLog = debug("pollinations:auth:preferences");
-
-	try {
-		preferenceLog(`Fetching preferences for user ${userId}`);
-
-		// Using admin endpoint to access preferences
-		const response = await fetch(
-			`https://auth.pollinations.ai/admin/preferences?user_id=${encodeURIComponent(userId)}`,
-			{
-				headers: {
-					Accept: "application/json",
-					Authorization: `Bearer ${process.env.ADMIN_API_KEY}`,
-				},
-			},
-		);
-
-		if (!response.ok) {
-			preferenceLog(
-				`Failed to fetch preferences: ${response.status} ${response.statusText}`,
-			);
-			// Log response body for debugging if status is not 404 (not found)
-			if (response.status !== 404) {
-				try {
-					const errorBody = await response.text();
-					preferenceLog("Error response body:", errorBody);
-				} catch (e) {
-					// Ignore error reading body
-				}
-			}
-			return null;
-		}
-
-		const data = await response.json();
-		preferenceLog("Preferences fetched successfully:", data.preferences);
-
-		return data.preferences || {};
-	} catch (error) {
-		preferenceLog("Error fetching preferences:", error);
-		return null;
-	}
-}
+// Legacy authentication functions removed:
+// - shouldBypassQueue() - no longer needed (no queue)
+// - handleAuthentication() - no longer needed (no validation)
+// - addAuthDebugHeaders() - no longer needed (no auth debugging)
+// - createAuthDebugResponse() - no longer needed (no auth debugging)
+// - getUserPreferences() - called auth.pollinations.ai (deprecated)
+//
+// All authentication is now handled by enter.pollinations.ai
