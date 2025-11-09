@@ -246,7 +246,7 @@ def call_pollinations_api(system_prompt: str, user_prompt: str, token: str) -> s
         ],
         "temperature": 0.7,
         "seed": seed,
-        "max_tokens": 500
+        "max_tokens": 250
     }
     response = requests.post(
         POLLINATIONS_API_BASE,
