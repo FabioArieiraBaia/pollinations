@@ -116,7 +116,7 @@ def create_final_digest_prompt(all_changes: List[str]) -> tuple:
     end_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     start_date = get_last_digest_time().strftime("%Y-%m-%dT%H:%M:%SZ")
     date_str = f"From {start_date.split('T')[0].split('-')[2]} {MONTH[int(start_date.split('T')[0].split('-')[1]) - 1]} {start_date.split('T')[0].split('-')[0]} to {end_date.split('T')[0].split('-')[2]} {MONTH[int(end_date.split('T')[0].split('-')[1]) - 1]} {end_date.split('T')[0].split('-')[0]}"
-
+    print(f"Creating final digest for period: {date_str}")
     system_prompt = f"""
     You are creating the FINAL weekly digest for Pollinations AI Discord community.
     You've been given pre-filtered user-facing changes. Now create ONE polished, engaging message.
@@ -170,7 +170,7 @@ def create_single_digest_prompt(prs: List[Dict]) -> tuple:
     end_date = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     start_date = get_last_digest_time().strftime("%Y-%m-%dT%H:%M:%SZ")
     date_str = f"From {start_date.split('T')[0].split('-')[2]} {MONTH[int(start_date.split('T')[0].split('-')[1]) - 1]} {start_date.split('T')[0].split('-')[0]} to {end_date.split('T')[0].split('-')[2]} {MONTH[int(end_date.split('T')[0].split('-')[1]) - 1]} {end_date.split('T')[0].split('-')[0]}"
-
+    print(f"Creating final digest for period: {date_str}")
     system_prompt = f"""
     You are creating a weekly digest for the Pollinations AI Discord community.
     Analyze the merged PRs and create ONE clean, engaging update message for USERS of the platform.
