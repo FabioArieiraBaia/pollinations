@@ -128,7 +128,7 @@ def create_final_digest_prompt(all_changes: List[str]) -> tuple:
     [Greet the community naturally and casually in a playful way]
 
     ## 🌸 Weekly Update - {date_str}
-
+    (do not change anything from the mentioned date_str, strictly use it as is)
     ### [Choose section name with emoji based on changes]
     - Polished description of change (benefits-focused)
     - Another change
@@ -182,7 +182,7 @@ def create_single_digest_prompt(prs: List[Dict]) -> tuple:
     [Greet the community naturally and casually in a playful way]
 
     ## 🌸 Weekly Update - {date_str}
-
+    (do not change anything from the mentioned date_str, strictly use it as is)
     [Create sections that make sense for what actually changed - you have COMPLETE FREEDOM]
     [Examples: "🎮 Discord Bot", "🚀 New Models", "⚡ Speed Improvements", "🎨 UI Updates", "🔧 Bug Fixes", etc.]
 
