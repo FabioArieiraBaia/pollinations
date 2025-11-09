@@ -51,140 +51,8 @@ export function isValidToken(token, validTokens) {
 	return tokensArray.includes(token);
 }
 
-/**
- * Check if a referrer domain is registered by any user in the auth.pollinations.ai database
- * @param {string} referrer - The referrer URL to check
- * @returns {Promise<{userId: string, username: string}|null>} User info if domain is registered, null otherwise
- */
-async function _checkReferrerInDb(referrer) {
-	if (!referrer) return null;
-
-	try {
-		// Extract domain from referrer URL if it's a full URL
-		let domain = referrer;
-		if (referrer.startsWith("http://") || referrer.startsWith("https://")) {
-			try {
-				const urlObj = new URL(referrer);
-				domain = urlObj.hostname;
-			} catch (error) {
-				// If parsing fails, use the raw referrer value
-				referrerLog("Failed to parse referrer as URL, using raw value:", error);
-			}
-		}
-
-		referrerLog(
-			`Checking if domain ${domain} is registered in auth.pollinations.ai database`,
-		);
-
-		// Query the auth.pollinations.ai API to check if the domain is registered by any user
-		const apiUrl = `https://auth.pollinations.ai/api/validate-referrer?referrer=${encodeURIComponent(domain)}`;
-		referrerLog(`Calling API: ${apiUrl}`);
-
-		const response = await fetch(apiUrl);
-		if (!response.ok) {
-			referrerLog(`API returned error status: ${response.status}`);
-			return null;
-		}
-
-		const data = await response.json();
-		referrerLog("API response:", data);
-
-		if (data && data.valid && data.user_id) {
-			referrerLog(
-				`✅ Domain ${domain} is registered by user ${data.user_id} (${data.username})`,
-			);
-			return {
-				userId: data.user_id,
-				username: data.username,
-			};
-		} else {
-			referrerLog(`❌ Domain ${domain} is not registered in the database`);
-			return null;
-		}
-	} catch (error) {
-		referrerLog("Error checking referrer in database:", error);
-		return null;
-	}
-}
-
-// Memoized version with 30 second TTL
-export const checkReferrerInDb = memoizee(_checkReferrerInDb, {
-	maxAge: 30000, // 30 seconds
-	promise: true, // Handle async functions properly
-});
-
-/**
- * Validate token against the auth.pollinations.ai API.
- * @param {string} token - The token to validate.
- * @returns {Promise<{userId: string, username: string}|null>} User info if valid, null otherwise.
- */
-async function _validateApiTokenDb(token) {
-	const maskedToken =
-		token && token.length > 8
-			? token.substring(0, 4) + "..." + token.substring(token.length - 4)
-			: token;
-
-	if (!token) {
-		tokenLog("validateApiTokenDb: No token provided");
-		return null;
-	}
-
-	tokenLog(
-		"validateApiTokenDb: Starting validation for token: %s",
-		maskedToken,
-	);
-
-	try {
-		const apiUrl = `https://auth.pollinations.ai/api/validate-token/${encodeURIComponent(token)}`;
-		tokenLog("validateApiTokenDb: Making API call to auth.pollinations.ai");
-
-		// Call the auth.pollinations.ai API to validate the token using a simple GET request
-		const response = await fetch(apiUrl);
-
-		tokenLog(
-			"validateApiTokenDb: API response status: %d %s",
-			response.status,
-			response.statusText,
-		);
-
-		if (!response.ok) {
-			tokenLog(
-				"validateApiTokenDb: API returned non-OK status: %d",
-				response.status,
-			);
-			return null;
-		}
-
-		const data = await response.json();
-		tokenLog("validateApiTokenDb: API response data: %o", data);
-
-		if (data && data.valid && data.userId) {
-			tokenLog(
-				"validateApiTokenDb: Valid token for user: %s",
-				data.userId,
-			);
-			return {
-				userId: data.userId,
-				username: data.username || data.userId, // Use userId as fallback if username not provided
-			};
-		} else {
-			tokenLog(
-				"validateApiTokenDb: Token validation failed - invalid token or missing userId",
-			);
-			return null;
-		}
-	} catch (error) {
-		tokenLog("validateApiTokenDb: Error during API call: %s", error.message);
-		console.error("Error validating token with auth API:", error);
-		return null;
-	}
-}
-
-// Memoized version with 30 second TTL
-export const validateApiTokenDb = memoizee(_validateApiTokenDb, {
-	maxAge: 30000, // 30 seconds
-	promise: true, // Handle async functions properly
-});
+// Legacy auth.pollinations.ai validation functions removed
+// Authentication is now handled by enter.pollinations.ai
 
 /**
  * Check if domain is whitelisted
@@ -218,7 +86,7 @@ export function isDomainWhitelisted(referrer, whitelist) {
  * @param {string} userId - The user ID.
  * @param {string} referrer - The referrer URL to check.
  * @param {D1Database} db - The D1 Database instance.
- * @param {function} isDomainAllowedDb - The function to check domain against DB (e.g., from auth.pollinations.ai/src/db.ts).
+ * @param {function} isDomainAllowedDb - The function to check domain against DB.
  * @returns {Promise<boolean>} Whether the domain is allowed for the user.
  */
 export async function isUserDomainAllowedFromDb(
@@ -281,22 +149,20 @@ export async function shouldBypassQueue(req) {
 		tokenSource: token ? getTokenSource(req) : null,
 	};
 
-	// 1️⃣ Token-based authentication
+	// 1️⃣ Token-based authentication (legacy - no longer validated)
 	if (token) {
-		tokenLog("Validating token: %s", debugInfo.token);
-		tokenLog("Checking token against auth.pollinations.ai API");
-		const tokenResult = await validateApiTokenDb(token);
-		if (tokenResult && tokenResult.userId) {
+		tokenLog("Token found but validation disabled: %s", debugInfo.token);
+		// Token validation against auth.pollinations.ai removed
+		// All requests now assumed to come from enter.pollinations.ai
+		if (false) { // Dead code block - keeping structure for reference
 			tokenLog(
-				"✅ Valid DB token found for user: %s",
-				tokenResult.userId,
+				"✅ Valid DB token found for user: (validation disabled)",
 			);
 			debugInfo.authResult = "DB_TOKEN";
-			debugInfo.userId = tokenResult.userId;
-			debugInfo.username = tokenResult.username;
+			debugInfo.userId = null;
+			debugInfo.username = null;
 			log(
-				"Authentication succeeded: DB_TOKEN for user %s",
-				tokenResult.userId,
+				"Authentication succeeded: DB_TOKEN for user (validation disabled)",
 			);
 			return {
 				authenticated: true,
@@ -313,43 +179,12 @@ export async function shouldBypassQueue(req) {
 		// throw new Error('Invalid or unrecognized token provided');
 	}
 
-	// 2️⃣ Referrer-based authentication
+	// 2️⃣ Referrer-based authentication (legacy - no longer validated)
 	if (ref) {
 		const refStr = String(ref);
-
-		referrerLog(
-			"Checking if referrer is registered in auth database: %s",
-			refStr,
-		);
-		const dbReferrerResult = await checkReferrerInDb(refStr);
-		if (dbReferrerResult && dbReferrerResult.userId) {
-			referrerLog(
-				"✅ Registered domain: %s for user %s",
-				refStr,
-				dbReferrerResult.userId,
-			);
-			debugInfo.authResult = "DB_REFERRER";
-			debugInfo.dbReferrerMatch = true; // Ensuring this is included
-			debugInfo.userId = dbReferrerResult.userId;
-			debugInfo.username = dbReferrerResult.username; // Ensuring this is included
-			log(
-				"Authentication succeeded: DB_REFERRER for user %s",
-				dbReferrerResult.userId,
-			);
-			return {
-				authenticated: true,
-				tokenAuth: false,
-				referrerAuth: true,
-				reason: "DB_REFERRER",
-				...dbReferrerResult,
-				debugInfo,
-			};
-		} else {
-			referrerLog(
-				"Referrer is not a registered domain in auth database: %s",
-				refStr,
-			);
-		}
+		referrerLog("Referrer found but validation disabled: %s", refStr);
+		// Referrer validation against auth.pollinations.ai removed
+		// All requests now assumed to come from enter.pollinations.ai
 	}
 
 	// Default return if no authentication method succeeds
