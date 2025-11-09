@@ -33,66 +33,11 @@ import { ImageParamsSchema, type ImageParams } from "./params.js";
 import { createProgressTracker, type ProgressManager } from "./progressBar.js";
 import { sleep } from "./util.ts";
 
-// Queue configuration for image service - DEACTIVATED
-// Rate limiting disabled - all requests processed immediately
-const QUEUE_CONFIG = {
-    interval: 0, // No interval delay (deactivated)
-    cap: 100, // High concurrency limit (effectively no limit)
-};
-
 const logError = debug("pollinations:error");
 const logApi = debug("pollinations:api");
 const logAuth = debug("pollinations:auth");
 
 export const currentJobs = [];
-
-// In-memory store for tracking IP violations
-const ipViolations = new Map<string, number>();
-const MAX_VIOLATIONS = 5;
-
-// In-memory hourly rate limiter for seedream and nanobanana
-interface HourlyUsage {
-    count: number;
-    hourStart: number;
-}
-const hourlyUsage = new Map<string, HourlyUsage>();
-const HOURLY_LIMIT = 10;
-const HOUR_MS = 60 * 60 * 1000;
-
-// Check and update hourly usage for an IP
-const checkHourlyLimit = (ip: string): { allowed: boolean; remaining: number; resetIn: number } => {
-    const now = Date.now();
-    const usage = hourlyUsage.get(ip);
-    
-    // No usage yet or hour has passed - reset
-    if (!usage || now - usage.hourStart >= HOUR_MS) {
-        hourlyUsage.set(ip, { count: 1, hourStart: now });
-        return { allowed: true, remaining: HOURLY_LIMIT - 1, resetIn: HOUR_MS };
-    }
-    
-    // Within the same hour
-    if (usage.count >= HOURLY_LIMIT) {
-        const resetIn = HOUR_MS - (now - usage.hourStart);
-        return { allowed: false, remaining: 0, resetIn };
-    }
-    
-    // Increment and allow
-    usage.count++;
-    const resetIn = HOUR_MS - (now - usage.hourStart);
-    return { allowed: true, remaining: HOURLY_LIMIT - usage.count, resetIn };
-};
-
-// Check if an IP is blocked
-const isIpBlocked = (ip: string) => {
-    return (ipViolations.get(ip) || 0) >= MAX_VIOLATIONS;
-};
-
-// Increment violations for an IP
-const incrementIpViolations = (ip: string) => {
-    const currentViolations = ipViolations.get(ip) || 0;
-    ipViolations.set(ip, currentViolations + 1);
-    return currentViolations + 1;
-};
 
 /**
  * @function
@@ -169,14 +114,6 @@ const imageGen = async ({
     authResult,
 }: ImageGenParams): Promise<ImageGenerationResult> => {
     const ip = getIp(req);
-
-    // Check if IP is blocked
-    if (isIpBlocked(ip)) {
-        throw new Error(
-            `Your IP ${ip} has been temporarily blocked due to multiple content violations`,
-        );
-    }
-
     const startTime = Date.now();
     
     try {
@@ -308,16 +245,6 @@ const imageGen = async ({
 
         return { buffer, ...maturity };
     } catch (error) {
-        // Check if this was a prohibited content error
-        if (error.message === "Content is prohibited") {
-            const violations = incrementIpViolations(ip);
-            if (violations >= MAX_VIOLATIONS) {
-                await sleep(10000);
-                throw new Error(
-                    `Your IP ${ip} has been temporarily blocked due to multiple content violations`,
-                );
-            }
-        }
         // Handle errors gracefully in progress bars
         progress.errorBar(requestId, "Generation failed");
         progress.stop();
@@ -429,11 +356,8 @@ const checkCacheAndGenerate = async (
                     return result;
                 };
 
-                // Queue configuration - RATE LIMITING DEACTIVATED
-                // All requests processed immediately without delays
-                let queueConfig = { interval: 0, cap: 100 };
-                logAuth("Rate limiting deactivated - processing immediately");
-                
+                // RATE LIMITING DEACTIVATED - Direct execution via enqueue
+                // enqueue() now executes immediately (see shared/ipQueue.js)
                 if (hasValidToken) {
                     progress.updateBar(
                         requestId,
@@ -443,15 +367,13 @@ const checkCacheAndGenerate = async (
                     );
                 }
 
-                // Use the shared queue utility - everyone goes through queue
+                // Execute via enqueue (validates auth, then executes immediately)
                 const result = await enqueue(
                     req,
                     async () => {
-                        // Update progress and process the image
                         progress.setProcessing(requestId);
                         return generateImage();
                     },
-                    queueConfig,
                 );
 
                 return result;
