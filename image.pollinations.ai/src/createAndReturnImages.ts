@@ -635,7 +635,8 @@ const callAzureGPTImageWithEndpoint = async (
 
                     if (!imageSafetyResult.safe) {
                         const errorMessage = `Input image ${i + 1} contains unsafe content: ${imageSafetyResult.formattedViolations}`;
-                        const error = new Error(errorMessage);
+                        const error: any = new Error(errorMessage);
+                        error.status = 403; // Forbidden - content policy violation
                         await logGptImageError(
                             prompt,
                             safeParams,
@@ -869,7 +870,8 @@ const generateImage = async (
                     );
 
                     // Log the error with safety analysis results
-                    const error = new Error(errorMessage);
+                    const error: any = new Error(errorMessage);
+                    error.status = 403; // Forbidden - content policy violation
                     await logGptImageError(
                         prompt,
                         safeParams,
@@ -954,7 +956,8 @@ const generateImage = async (
                 );
 
                 // Log the error with safety analysis results
-                const error = new Error(errorMessage);
+                const error: any = new Error(errorMessage);
+                error.status = 403; // Forbidden - content policy violation
                 await logGptImageError(
                     prompt,
                     safeParams,
@@ -1199,9 +1202,11 @@ export async function createAndReturnImageCached(
 
         // Safety check
         if (safeParams.safe && isMature) {
-            throw new Error(
+            const error: any = new Error(
                 "NSFW content detected. This request cannot be fulfilled when safe mode is enabled.",
             );
+            error.status = 403; // Forbidden - content policy violation
+            throw error;
         }
 
         // Prepare metadata

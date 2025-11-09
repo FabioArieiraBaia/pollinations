@@ -33,10 +33,11 @@ import { ImageParamsSchema, type ImageParams } from "./params.js";
 import { createProgressTracker, type ProgressManager } from "./progressBar.js";
 import { sleep } from "./util.ts";
 
-// Queue configuration for image service
+// Queue configuration for image service - DEACTIVATED
+// Rate limiting disabled - all requests processed immediately
 const QUEUE_CONFIG = {
-    interval: 30000, // 30 seconds between requests per IP (no auth)
-    cap: 1, // Max 1 concurrent request per IP
+    interval: 0, // No interval delay (deactivated)
+    cap: 100, // High concurrency limit (effectively no limit)
 };
 
 const logError = debug("pollinations:error");
@@ -428,32 +429,10 @@ const checkCacheAndGenerate = async (
                     return result;
                 };
 
-                // Determine queue configuration based on model first, then authentication
-                let queueConfig = null;
-                
-                // Model-specific queue configs - all requests assumed from enter.pollinations.ai
-                const modelName = safeParams.model as string;
-                if (modelName === "nanobanana") {
-                    // 90 second interval - no hourly limit for enter requests
-                    queueConfig = { interval: 90000 }; // 90 second interval
-                    logAuth(`${modelName} model - 90 second interval (enter request - no hourly limit)`);
-                } else if (modelName === "kontext") {
-                    // 30 second interval
-                    queueConfig = { interval: 30000 };
-                    logAuth(`${modelName} model - 30 second interval`);
-                } else if (modelName === "gptimage") {
-                    // 60 second interval
-                    queueConfig = { interval: 60000 };
-                    logAuth("GPTImage model - 60 second interval");
-                } else if (hasValidToken) {
-                    // Token authentication for other models - 7s minimum interval
-                    queueConfig = { interval: 7000 };
-                    logAuth("Token authenticated - using 7s minimum interval");
-                } else {
-                    // Use default queue config for other models with no token
-                    queueConfig = QUEUE_CONFIG;
-                    logAuth("Standard queue with delay (no token)");
-                }
+                // Queue configuration - RATE LIMITING DEACTIVATED
+                // All requests processed immediately without delays
+                let queueConfig = { interval: 0, cap: 100 };
+                logAuth("Rate limiting deactivated - processing immediately");
                 
                 if (hasValidToken) {
                     progress.updateBar(
@@ -472,7 +451,7 @@ const checkCacheAndGenerate = async (
                         progress.setProcessing(requestId);
                         return generateImage();
                     },
-                    { ...queueConfig, forceQueue: true },
+                    queueConfig,
                 );
 
                 return result;

@@ -66,7 +66,8 @@ export async function callAzureFluxKontext(
         const errorMessage = `Prompt contains unsafe content: ${promptSafetyResult.formattedViolations}`;
         logError("Azure Content Safety rejected prompt:", errorMessage);
 
-        const error = new Error(errorMessage);
+        const error: any = new Error(errorMessage);
+        error.status = 403; // Forbidden - content policy violation
         await logGptImageError(
             prompt,
             safeParams,
@@ -141,7 +142,8 @@ export async function callAzureFluxKontext(
 
             if (!imageSafetyResult.safe) {
                 const errorMessage = `Input image contains unsafe content: ${imageSafetyResult.formattedViolations}`;
-                const error = new Error(errorMessage);
+                const error: any = new Error(errorMessage);
+                error.status = 403; // Forbidden - content policy violation
                 await logGptImageError(
                     prompt,
                     safeParams,
