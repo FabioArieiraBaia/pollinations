@@ -26,8 +26,6 @@ import {
 } from "./utils/stringMonitor.js";
 
 // Import shared utilities
-import { enqueue } from "../shared/ipQueue.js";
-// handleAuthentication removed - no longer needed (no auth validation)
 import { getIp } from "../shared/extractFromRequest.js";
 import {
     buildUsageHeaders,
@@ -124,13 +122,6 @@ app.get("/crossdomain.xml", (req, res) => {
 });
 
 app.set("trust proxy", true);
-
-// Queue configuration for text service
-const QUEUE_CONFIG = {
-    interval: 18000, // 18 seconds between requests per IP (no auth)
-};
-
-// Using getIp from shared auth-utils.js
 
 // GET /models request handler
 app.get("/models", (req, res) => {

@@ -10,7 +10,7 @@ import { sendImageTelemetry } from "./utils/telemetry.js";
 import { buildTrackingHeaders } from "./utils/trackingHeaders.js";
 
 // Import shared utilities
-import { enqueue } from "../../shared/ipQueue.js";
+// enqueue removed - no longer needed (no rate limiting, no auth validation)
 import { countFluxJobs, handleRegisterEndpoint } from "./availableServers.js";
 import { cacheImagePromise } from "./cacheGeneratedImages.js";
 import { IMAGE_CONFIG } from "./models.js";
@@ -374,14 +374,10 @@ const checkCacheAndGenerate = async (
                     );
                 }
 
-                // Execute via enqueue (validates auth, then executes immediately)
-                const result = await enqueue(
-                    req,
-                    async () => {
-                        progress.setProcessing(requestId);
-                        return generateImage();
-                    },
-                );
+                // Execute directly - no rate limiting, no auth validation
+                // All authentication handled by enter.pollinations.ai
+                progress.setProcessing(requestId);
+                const result = await generateImage();
 
                 return result;
             },
