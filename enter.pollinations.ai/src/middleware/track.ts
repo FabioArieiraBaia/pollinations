@@ -127,9 +127,11 @@ export const track = (eventType: EventType) =>
                 const userTracking = {
                     userId: c.var.auth.user?.id,
                     userTier: c.var.auth.user?.tier,
+                    userEmail: c.var.auth.user?.email,
                     userGithubId: c.var.auth.user?.githubId,
                     userGithubName: c.var.auth.user?.githubUsername,
                     apiKeyId: c.var.auth.apiKey?.id,
+                    apiKeyName: c.var.auth.apiKey?.name,
                     apiKeyType: c.var.auth.apiKey?.metadata
                         ?.keyType as ApiKeyType,
                 };
@@ -281,9 +283,11 @@ async function* asyncIteratorStream<T>(
 type UserData = {
     userId?: string;
     userTier?: string;
+    userEmail?: string;
     userGithubId?: number;
     userGithubName?: string;
     apiKeyId?: string;
+    apiKeyName?: string;
     apiKeyType?: ApiKeyType;
 };
 

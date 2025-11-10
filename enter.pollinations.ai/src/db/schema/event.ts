@@ -52,7 +52,11 @@ export const event = sqliteTable("event", {
     // User information
     userId: text("user_id"),
     userTier: text("user_tier"),
+    userEmail: text("user_email"),
+    userGithubId: integer("user_github_id"),
+    userGithubName: text("user_github_name"),
     apiKeyId: text("api_key_id"),
+    apiKeyName: text("api_key_name"),
     apiKeyType: text("api_key_type", {
         enum: apiKeyTypeValues,
     }).$type<ApiKeyType>(),
