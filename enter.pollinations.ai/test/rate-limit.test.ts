@@ -320,8 +320,5 @@ test(
         );
 
         expect(remaining2).toBeGreaterThanOrEqual(remaining1);
-
-        // Give waitUntil operations time to complete
-        await new Promise((resolve) => setTimeout(resolve, 100));
     },
 );
