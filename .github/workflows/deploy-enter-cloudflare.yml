@@ -17,6 +17,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup SOPS
+        uses: nhedger/setup-sops@v2
+
+      - name: Decrypt secrets with SOPS
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          # Decrypt production secrets
+          if [ -f "enter.pollinations.ai/.encrypted.prod.env" ]; then
+            sops -d enter.pollinations.ai/.encrypted.prod.env > enter.pollinations.ai/.decrypted.prod.env
+            echo "✅ Decrypted enter.pollinations.ai production secrets"
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -24,6 +37,32 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: ./enter.pollinations.ai
+
+      - name: Set Cloudflare secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          # Extract and set secrets from decrypted env file
+          if [ -f ".decrypted.prod.env" ]; then
+            echo "🔐 Setting Cloudflare secrets..."
+            
+            # Read each secret and set it
+            while IFS='=' read -r key value; do
+              # Skip comments and empty lines
+              [[ "$key" =~ ^#.*$ ]] && continue
+              [[ -z "$key" ]] && continue
+              
+              # Remove quotes from value if present
+              value=$(echo "$value" | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+              
+              # Set the secret in Cloudflare
+              echo "Setting $key..."
+              echo "$value" | npx wrangler secret put "$key" --env production
+            done < .decrypted.prod.env
+            
+            echo "✅ All secrets set in Cloudflare"
+          fi
         working-directory: ./enter.pollinations.ai
 
       - name: Build and deploy to Cloudflare
