@@ -104,7 +104,7 @@ After deployment, verify with:
 ```bash
 # Should work now (not immediately exhausted)
 curl "https://enter.pollinations.ai/api/generate/image/test?model=flux&width=256&height=256" \
-  -H "Authorization: Bearer pk_YOUR_KEY" \
+  -H "Authorization: Bearer plln_pk_YOUR_KEY" \
   -I
 ```
 

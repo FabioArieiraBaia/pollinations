@@ -105,7 +105,7 @@ pollinations/
 Our new centralized authentication and model gateway:
 - **Status**: Beta - actively being rolled out
 - **Features**: Unified authentication, pollen-based billing, all models in one place
-- **Authentication**: Publishable keys (`pk_`) and Secret keys (`sk_`)
+- **Authentication**: Publishable keys (`plln_pk_`) and Secret keys (`plln_sk_`)
 - **Endpoints** (transitional - will be simplified): 
   - `/api/generate/image/*` - Image generation with all models
   - `/api/generate/openai` - OpenAI-compatible text/audio endpoints

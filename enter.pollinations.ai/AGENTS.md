@@ -29,13 +29,13 @@
 
 **Two types of API keys available:**
 
-1. **🌐 Publishable Key** (starts with `pk_`)
+1. **🌐 Publishable Key** (starts with `plln_pk_`)
    - Always visible in dashboard
    - Safe for client-side code (React, Vue, etc.)
    - Pollen-based rate limiting: 1 pollen/hour refill per IP+key
    - Access to all models
-   
-2. **🔒 Secret Key** (starts with `sk_`)
+
+2. **🔒 Secret Key** (starts with `plln_sk_`)
    - Only shown once - copy immediately!
    - For server-side apps only
    - Never expose publicly
@@ -46,7 +46,7 @@
 
 ```bash
 # Get your API key from: https://enter.pollinations.ai
-export TOKEN="your_secret_key_here"  # sk_...
+export TOKEN="your_secret_key_here"  # plln_sk_...
 
 # Set base URL
 export BASE_URL="https://enter.pollinations.ai/api"
@@ -394,7 +394,7 @@ done
 # Note: You can store your token in a .env.local file and extract it like this:
 # TOKEN=$(grep "^YOUR_TOKEN_VAR=" /path/to/.env.local | cut -d= -f2)
 # Or set it directly:
-TOKEN="your_secret_key_here"  # sk_...
+TOKEN="your_secret_key_here"  # plln_sk_...
 BASE_URL="https://enter.pollinations.ai/api"
 
 echo "🧪 Testing Enter Service"
@@ -428,10 +428,10 @@ echo "✅ Done!"
 
 ### 401 Unauthorized
 - **All models require authentication** - no anonymous access
-- Check your token is correct (starts with `pk_` or `sk_`)
+- Check your token is correct (starts with `plln_pk_` or `plln_sk_`)
 - Verify token exists in database
 - Ensure you're using `Authorization: Bearer $TOKEN` header
-- For paid models, ensure you're using a **Secret Key** (`sk_`), not Publishable Key
+- For paid models, ensure you're using a **Secret Key** (`plln_sk_`), not Publishable Key
 
 ### 403 Forbidden
 - **Insufficient pollen balance** - paid models require pollen
@@ -507,8 +507,8 @@ curl "$BASE_URL/generate/v1/chat/completions" \
 
 ### Authentication
 
-- **Use Secret Keys (`sk_`) for testing**: Better rate limits and can spend pollen
-- **Publishable Keys (`pk_`)**: Only for client-side apps, IP rate limited (100 req/min)
+- **Use Secret Keys (`plln_sk_`) for testing**: Better rate limits and can spend pollen
+- **Publishable Keys (`plln_pk_`)**: Only for client-side apps, IP rate limited (100 req/min)
 
 ### Performance
 
