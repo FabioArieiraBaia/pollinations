@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        # pollinations.ai - Feature App
+        # pollinations.ai - [Featured App](https://pollinations.ai)
         
         Thanks for submitting your app! Fill out the form below and we'll review it for the [pollinations.ai showcase](https://pollinations.ai).
 
