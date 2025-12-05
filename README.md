@@ -16,10 +16,11 @@ We opened 67 issues and closed 38, created 25 PRs with 22 merged (30 total contr
 
 ## 🆕 Latest News
 
-- **🧠 Sequa AI Integration** - [Sequa.AI](https://sequa.ai) contextual knowledge engine now available! Provides AI assistants with deep, real-time understanding of codebases and documentation. Configure MCP for Pollinations: `https://mcp.sequa.ai/v1/pollinations/contribute` | [Learn more](https://sequa.ai).
-- **🔐 Auth Dashboard** - New and live! Visit [auth.pollinations.ai](https://auth.pollinations.ai) to manage your API tokens and referrer domains. [Learn more](APIDOCS.md#authentication-).
-- **💲 Support Us** - You can now support us with our new **Tip Us** button. Optionally connect your Discord account to **Ko-Fi** to get premium Discord roles!
-- **🎵 Audio Generation** - New text-to-speech and speech-to-text capabilities are now available! Try the `openai-audio` model - see our [API documentation](APIDOCS.md#audio-generation-api) for details.
+- **🚀 Amazon Nova Micro** - Now supporting Amazon's efficient text model `amazon/nova-micro-v1:0` in our text generation API.
+- **🔑 enter.pollinations.ai** - Our new centralized authentication and model gateway is in Beta! Unified keys for all models.
+- **⚡ Website Sync** - Enhanced website update synchronization for faster content delivery and stability.
+- **🧠 Sequa AI Integration** - [Sequa.AI](https://sequa.ai) contextual knowledge engine now available! Provides AI assistants with deep, real-time understanding of codebases and documentation.
+- **🎵 Audio Generation** - New text-to-speech and speech-to-text capabilities are now available! Try the `openai-audio` model.
 ---
 
 [![Pollinations.AI Logo](https://pollinations.ai/p/3D_wireframe_blueprint_of_the_conceptual_isometric_world_of_Pollinations_AI_a_surreal_hyperrealistic_digital_garden_Elements_emerge_partially_from_all_sides?width=3000&height=1000&seed=-1)](https://pollinations.ai/p/3D_wireframe_blueprint_of_the_conceptual_isometric_world_of_Pollinations_AI_a_surreal_hyperrealistic_digital_garden_Elements_emerge_partially_from_all_sides?width=3000&height=1000&seed=-1)
