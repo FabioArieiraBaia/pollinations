@@ -61,7 +61,9 @@ export function getEnterImageURL(params) {
   // Add API key to query params
   queryParams.set("key", UI_ASSETS_API_KEY);
 
-  const url = `${ENTER_BASE_URL}/generate/image/${encodeURIComponent(prompt)}?${queryParams.toString()}`;
+  // Replace % with ' percent ' to avoid WAF blocks
+  const safePrompt = prompt ? prompt.replace(/%/g, " percent ") : "";
+  const url = `${ENTER_BASE_URL}/generate/image/${encodeURIComponent(safePrompt)}?${queryParams.toString()}`;
   return url;
 }
 
