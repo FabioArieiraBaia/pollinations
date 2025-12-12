@@ -49,9 +49,9 @@ export const TEXT_SERVICES = {
         cost: [
             {
                 date: COST_START_DATE,
-                promptTextTokens: perMillion(0.5),
-                promptCachedTokens: perMillion(0.125),
-                completionTextTokens: perMillion(2.0),
+                promptTextTokens: perMillion(1.75),
+                promptCachedTokens: perMillion(0.175),
+                completionTextTokens: perMillion(14.0),
             },
         ],
         description: "OpenAI GPT-5.2 - Most Powerful & Intelligent",
@@ -143,9 +143,9 @@ export const TEXT_SERVICES = {
         cost: [
             {
                 date: COST_START_DATE,
-                promptTextTokens: perMillion(0.5),
-                promptCachedTokens: perMillion(0.125),
-                completionTextTokens: perMillion(2.0),
+                promptTextTokens: perMillion(1.75),
+                promptCachedTokens: perMillion(0.175),
+                completionTextTokens: perMillion(14.0),
             },
         ],
         description: "OpenAI GPT-5.2 - Hybrid Reasoning Model",
