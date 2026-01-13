@@ -358,3 +358,5 @@ pollinations.ai is open-source software licensed under the [MIT license](LICENSE
 ---
 
 Made with ❤️ by the pollinations.ai team
+| 💻 [PolliDev](https://github.com/FabioArieiraBaia/pollidev) ([⭐ 0](https://github.com/FabioArieiraBaia/pollidev/stargazers)) | AI-powered development environment with native Pollinations integration. Full-featured IDE built on VS Code with text/image generation, code completion, and multi-model AI support. | [@FabioArieiraBaia](https://github.com/FabioArieiraBaia) |
+Made with ❤️ by the pollinations.ai team
